@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+google-generativeai
+python-multipart
+pymupdf
+python-dotenv
+pyjwt
+sqlalchemy
+bcrypt
+youtube-transcript-api
+httpx
+google-auth
