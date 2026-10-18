@@ -24,7 +24,7 @@ This document serves as an exhaustive report detailing all features, architectur
 ### Backend (API & Processing Engine)
 - **Framework:** FastAPI (Python 3.10+)
 - **Database ORM:** SQLAlchemy with SQLite (`study_helper.db`)
-- **AI Engine:** Google Gemini SDK (`google-generativeai` using `gemini-2.5-flash`)
+- **AI Engine:** Google Gemini SDK (`google-generativeai` using `gemini-1.5-flash`)
 - **PDF Extraction:** PyMuPDF (`fitz`) for PDF parsing
 - **YouTube Processing:** `youtube-transcript-api` (transcript fetching) & `httpx` (oEmbed metadata)
 - **Security & Cryptography:** `bcrypt` (password hashing) & `PyJWT` (JSON Web Token auth)
@@ -114,8 +114,19 @@ A comprehensive security audit was conducted, and 16 security vulnerabilities we
 | `id` | Integer | Primary Key, Indexed | Auto-incremented User ID |
 | `name` | String | Non-null | User full name |
 | `email` | String | Unique, Indexed | User email address |
-| `password_hash` | String | Non-null | Bcrypt-hashed password |
+| `password_hash` | String | Nullable | Bcrypt-hashed password (NULL for Google-only accounts) |
+| `google_sub` | String | Unique, Indexed, Nullable | Google's stable per-account subject identifier |
 | `created_at` | DateTime | Default `utcnow` | Timestamp of registration |
+
+#### `password_reset_tokens` Table
+| Column Name | Data Type | Constraints | Description |
+|---|---|---|---|
+| `id` | Integer | Primary Key, Indexed | Auto-incremented Token ID |
+| `user_id` | Integer | Indexed, Non-null | Foreign key referencing `users.id` |
+| `token` | String | Unique, Indexed, Non-null | 6-digit reset code |
+| `expires_at` | DateTime | Non-null | Expiry timestamp (15 minutes from creation) |
+| `used` | Boolean | Default `false` | Whether the code has been consumed |
+| `created_at` | DateTime | Default `utcnow` | Timestamp of creation |
 
 #### `study_plans` Table
 | Column Name | Data Type | Constraints | Description |
@@ -135,6 +146,9 @@ A comprehensive security audit was conducted, and 16 security vulnerabilities we
 |---|---|---|---|
 | `POST` | `/auth/signup` | No (Rate Limited) | Register a new user account |
 | `POST` | `/auth/login` | No (Rate Limited) | Authenticate user and issue JWT Bearer token |
+| `POST` | `/auth/google` | No (Rate Limited) | Google OAuth sign-in via ID token verification |
+| `POST` | `/auth/forgot-password` | No (Rate Limited) | Request a 6-digit password reset code |
+| `POST` | `/auth/reset-password` | No (Rate Limited) | Reset password using a valid reset code |
 | `GET` | `/auth/me` | Yes (Bearer Token) | Fetch details of currently logged-in user |
 | `POST` | `/summarize` | No (Rate Limited) | Summarize text or uploaded PDF notes |
 | `POST` | `/generate-quiz` | No (Rate Limited) | Generate 5 MCQs with explanations |

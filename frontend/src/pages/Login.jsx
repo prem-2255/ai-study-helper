@@ -148,7 +148,7 @@ const Login = () => {
             </div>
           </div>
 
-          <div>
+          <div className="space-y-3">
             <button
               type="submit"
               disabled={loading || googleLoading}
@@ -159,6 +159,17 @@ const Login = () => {
               ) : (
                 'Sign In'
               )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('student@example.com')
+                setPassword('StudyHelperDemo123!')
+              }}
+              className="w-full py-2.5 px-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-medium text-indigo-300 hover:text-white transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+            >
+              <span>⚡ Auto-fill Demo Account (Viva Mode)</span>
             </button>
           </div>
         </form>

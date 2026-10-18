@@ -158,7 +158,9 @@ const StudyTools = () => {
       if (activeTool.id === 'explain') formData.append('concept', text)
       if (activeTool.id === 'plan') formData.append('days', planDays)
 
-      const resp = await axios.post(`${API_BASE}${activeTool.endpoint}`, formData)
+      const token = localStorage.getItem('token')
+      const headers = token ? { Authorization: `Bearer ${token}` } : {}
+      const resp = await axios.post(`${API_BASE}${activeTool.endpoint}`, formData, { headers })
 
       // Save result to session
       saveSession({ ...activeData, result: resp.data })

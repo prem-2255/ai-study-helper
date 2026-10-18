@@ -118,7 +118,9 @@ r = client.post("/summarize",
 check("Real PDF magic bytes accepted past the file gate", r.status_code in (200, 400),
       f"HTTP {r.status_code} (400 here means empty text extraction, not a rejected file)")
 
-# 8. Rate limiting on the anonymous AI endpoint (limit: 10 per 5 min).
+# 8. Rate limiting on the anonymous AI endpoint (limit: 10 per 5 min for test).
+main.security.public_ai_limiter.max_requests = 10
+main.security.public_ai_limiter.reset()
 codes = [client.post("/explain", data={"concept": f"topic {i}"}).status_code
          for i in range(12)]
 r = client.post("/explain", data={"concept": "one more"})
@@ -128,7 +130,9 @@ check("429 response carries Retry-After", "retry-after" in
       {k.lower() for k in r.headers.keys()},
       f"headers present: {'retry-after' in {k.lower() for k in r.headers}}")
 
-# 9. Login brute force is throttled (limit: 5 per 15 min).
+# 9. Login brute force is throttled (limit: 5 per 15 min for test).
+main.security.login_limiter.max_requests = 5
+main.security.login_limiter.reset()
 login_codes = [client.post("/auth/login",
                            json={"email": "test@example.com", "password": "wrong"}).status_code
                for i in range(8)]

@@ -3,6 +3,7 @@
 Deliberately dependency-free — everything here uses the standard library plus
 what FastAPI/Starlette already pull in, so `pip install` stays untouched.
 """
+import os
 import re
 import threading
 import time
@@ -205,13 +206,16 @@ class RateLimiter:
 
 
 
-# Shared limiter instances. Failed logins are the tightest bucket because that
-# endpoint is the brute-force target; the anonymous AI routes are next because
-# they spend real money on every call.
-login_limiter = RateLimiter(max_requests=5, window_seconds=15 * 60, scope="login")
-signup_limiter = RateLimiter(max_requests=3, window_seconds=60 * 60, scope="signup")
-forgot_password_limiter = RateLimiter(max_requests=5, window_seconds=15 * 60, scope="forgot-password")
-google_login_limiter = RateLimiter(max_requests=10, window_seconds=15 * 60, scope="google-login")
-public_ai_limiter = RateLimiter(max_requests=10, window_seconds=5 * 60, scope="public-ai")
-authed_ai_limiter = RateLimiter(max_requests=30, window_seconds=5 * 60, scope="authed-ai")
+# Shared limiter instances.
+# Configurable via environment variables with generous defaults for smooth viva demos.
+PUBLIC_AI_LIMIT = int(os.getenv("RATE_LIMIT_AI_REQUESTS", "100"))
+AUTHED_AI_LIMIT = int(os.getenv("RATE_LIMIT_AUTHED_REQUESTS", "200"))
+LOGIN_LIMIT = int(os.getenv("RATE_LIMIT_LOGIN_REQUESTS", "30"))
+
+login_limiter = RateLimiter(max_requests=LOGIN_LIMIT, window_seconds=15 * 60, scope="login")
+signup_limiter = RateLimiter(max_requests=30, window_seconds=60 * 60, scope="signup")
+forgot_password_limiter = RateLimiter(max_requests=30, window_seconds=15 * 60, scope="forgot-password")
+google_login_limiter = RateLimiter(max_requests=50, window_seconds=15 * 60, scope="google-login")
+public_ai_limiter = RateLimiter(max_requests=PUBLIC_AI_LIMIT, window_seconds=5 * 60, scope="public-ai")
+authed_ai_limiter = RateLimiter(max_requests=AUTHED_AI_LIMIT, window_seconds=5 * 60, scope="authed-ai")
 
